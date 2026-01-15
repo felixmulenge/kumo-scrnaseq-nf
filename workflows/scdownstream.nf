@@ -161,7 +161,7 @@ workflow SCDOWNSTREAM {
     //
     // Collate and save software versions
     //
-    /*
+    
     def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
@@ -187,7 +187,7 @@ workflow SCDOWNSTREAM {
             sort: true,
             newLine: true,
         )
-        .set { ch_collated_versions }*/
+        .set { ch_collated_versions }
 
     //
     // MODULE: MultiQC
