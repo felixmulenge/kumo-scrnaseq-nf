@@ -1,7 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - pip
-  - pip:
-      - hugo-unifier==0.2.8
