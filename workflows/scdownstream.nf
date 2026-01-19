@@ -27,10 +27,14 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+
+include { samplesheetToList         } from 'plugin/nf-schema'
+
+
+//def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-WorkflowScdownstream.initialise(params, log)
+//WorkflowScdownstream.initialise(params, log)
 
 //
 // Custom validation for pipeline parameters
@@ -44,7 +48,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Create channel from input file provided through params.input
 //
-ch_samplesheet = params.input ? Channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json")).map {
+ch_samplesheet = params.input ? channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json")).map {
         sample -> validateInputSamplesheet(sample)
     }
     : channel.empty()
@@ -72,7 +76,7 @@ include { PER_GROUP                            } from '../subworkflows/local/per
 include { FINALIZE                             } from '../subworkflows/local/finalize'
 include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
 include { softwareVersionsToYAML               } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-
+//include { samplesheetToList         } from 'plugin/nf-schema'
 
 // Info required for completion email and summary
 def multiqc_report = []
@@ -244,11 +248,11 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_multiqc_logo          = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
 
 
-workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
-ch_workflow_summary = Channel.value(workflow_summary)
+//workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
+//ch_workflow_summary = Channel.value(workflow_summary)
 
 ch_multiqc_files = Channel.empty()
-ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+//ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
 ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
 
 
@@ -274,6 +278,7 @@ ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+/*
 workflow.onComplete {
     if (params.email || params.email_on_fail) {
         NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
@@ -284,7 +289,9 @@ workflow.onComplete {
 
 
 }
+*/
 
+/*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
