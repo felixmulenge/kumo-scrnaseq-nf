@@ -51,10 +51,11 @@ include { samplesheetToList                    } from 'plugin/nf-schema'
 */
 
 
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+//def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-WorkflowScdownstream.initialise(params, log)
+
+//WorkflowScdownstream.initialise(params, log)
 
 //
 // Custom validation for pipeline parameters
@@ -247,19 +248,19 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_multiqc_logo          = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
 
 
-workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
-ch_workflow_summary = Channel.value(workflow_summary)
+//workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
+//ch_workflow_summary = Channel.value(workflow_summary)
 
 ch_multiqc_files = Channel.empty()
-ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+//ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
 ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
 
 
     MULTIQC(
         ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
+        ch_multiqc_config,
+        ch_multiqc_custom_config.ifEmpty([]),
+        ch_multiqc_logo.ifEmpty([]),
         [],
         [],
     )
@@ -277,7 +278,7 @@ ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-
+/*
 workflow.onComplete {
     if (params.email || params.email_on_fail) {
         NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
@@ -288,7 +289,7 @@ workflow.onComplete {
 
 
 }
-
+*/
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
