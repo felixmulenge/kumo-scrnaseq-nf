@@ -21,6 +21,29 @@
 //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CONFIG FILES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+
+include { LOAD_H5AD                            } from '../subworkflows/local/load_h5ad'
+include { QUALITY_CONTROL                      } from '../subworkflows/local/quality_control'
+include { CELLTYPE_ASSIGNMENT                  } from '../subworkflows/local/celltype_assignment'
+include { ADATA_EXTEND as FINALIZE_QC_ANNDATAS } from '../modules/local/adata/extend'
+include { COMBINE                              } from '../subworkflows/local/combine'
+include { ADATA_SPLITEMBEDDINGS                } from '../modules/local/adata/splitembeddings'
+include { CLUSTER                              } from '../subworkflows/local/cluster'
+include { PSEUDOBULKING                        } from '../subworkflows/local/pseudobulking'
+include { PER_GROUP                            } from '../subworkflows/local/per_group'
+include { FINALIZE                             } from '../subworkflows/local/finalize'
+include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
+include { softwareVersionsToYAML               } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { samplesheetToList                    } from 'plugin/nf-schema'
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     VALIDATE INPUTS
@@ -28,13 +51,10 @@
 */
 
 
-include { samplesheetToList         } from 'plugin/nf-schema'
-
-
-//def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-//WorkflowScdownstream.initialise(params, log)
+WorkflowScdownstream.initialise(params, log)
 
 //
 // Custom validation for pipeline parameters
@@ -55,28 +75,7 @@ ch_samplesheet = params.input ? channel.fromList(samplesheetToList(params.input,
 
 ch_base = params.base_adata ? Channel.value([[id: "base"], file(params.base_adata, checkIfExists: true)]) : Channel.value([[], []])
    
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
 
-
-
-
-include { LOAD_H5AD                            } from '../subworkflows/local/load_h5ad'
-include { QUALITY_CONTROL                      } from '../subworkflows/local/quality_control'
-include { CELLTYPE_ASSIGNMENT                  } from '../subworkflows/local/celltype_assignment'
-include { ADATA_EXTEND as FINALIZE_QC_ANNDATAS } from '../modules/local/adata/extend'
-include { COMBINE                              } from '../subworkflows/local/combine'
-include { ADATA_SPLITEMBEDDINGS                } from '../modules/local/adata/splitembeddings'
-include { CLUSTER                              } from '../subworkflows/local/cluster'
-include { PSEUDOBULKING                        } from '../subworkflows/local/pseudobulking'
-include { PER_GROUP                            } from '../subworkflows/local/per_group'
-include { FINALIZE                             } from '../subworkflows/local/finalize'
-include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
-include { softwareVersionsToYAML               } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-//include { samplesheetToList         } from 'plugin/nf-schema'
 
 // Info required for completion email and summary
 def multiqc_report = []
@@ -248,11 +247,11 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_multiqc_logo          = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
 
 
-//workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
-//ch_workflow_summary = Channel.value(workflow_summary)
+workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
+ch_workflow_summary = Channel.value(workflow_summary)
 
 ch_multiqc_files = Channel.empty()
-//ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
 ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
 
 
@@ -278,7 +277,7 @@ ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-/*
+
 workflow.onComplete {
     if (params.email || params.email_on_fail) {
         NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
@@ -289,7 +288,7 @@ workflow.onComplete {
 
 
 }
-*/
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
