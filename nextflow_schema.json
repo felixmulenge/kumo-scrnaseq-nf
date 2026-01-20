@@ -4,7 +4,7 @@
     "title": "nf-core/scdownstream pipeline parameters",
     "description": "A single cell transcriptomics pipeline for QC, integration and making the results presentable",
     "type": "object",
-    "$defs": {
+    "$definitions": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
