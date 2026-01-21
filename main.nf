@@ -1,13 +1,27 @@
 #!/usr/bin/env nextflow
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/scdownstream
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/scdownstream
-    Website: https://nf-co.re/scdownstream
-    Slack  : https://nfcore.slack.com/channels/scdownstream
-----------------------------------------------------------------------------------------
-*/
+
+// 
+//  .......  .....     ######   #
+//       .  .     .    #     #  
+//      .   .          #     #  #   ###    ###   ###   #   #   ###   # ###  #   #
+//     .     .....     #     #  #  #      #     #   #  #   #  #   #  ##     #   #
+//    .           .    #     #  #   ###   #     #   #  #   #  #####  #      #   #
+//   .      .     .    #     #  #      #  #     #   #   # #   #      #       # #
+//  .......  .....     ######   #   ###    ###   ###     #     ###   #        #
+//                                                                           #
+//                     Elucidate.  Innovate.  Accelerate.
+//
+//  Authors:
+//  ZS Discovery
+//
+//  Copyright (c) ZS Discovery
+//
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    bayer-int/kumo-long-read-nf
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    Website: www.zs.com/Discovery
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +41,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_scdo
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_SCDOWNSTREAM {
+workflow KUMO {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -73,7 +87,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_SCDOWNSTREAM (
+    KUMO (
         PIPELINE_INITIALISATION.out.samplesheet,
         params.base_adata
             ? channel.value([[id: "base"], file(params.base_adata, checkIfExists: true)])
@@ -90,7 +104,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_SCDOWNSTREAM.out.multiqc_report
+        KUMO.out.multiqc_report
     )
 }
 
