@@ -20,7 +20,7 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     help_full           // boolean:  show full help message
     show_hidden         // boolean:  show hidden parameters in help message
     before_text         // string:   text to show before the help message and parameters summary
-    //after_text          // string:   text to show after the help message and parameters summary
+    after_text          // string:   text to show after the help message and parameters summary
     command             // string:   an example command of the pipeline
 
     main:
@@ -28,7 +28,7 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     if(help || help_full) {
         help_options = [
             beforeText: before_text,
-            //afterText: after_text,
+            afterText: after_text,
             command: command,
             showHidden: show_hidden,
             fullHelp: help_full,
@@ -54,7 +54,7 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     }
     log.info before_text
     log.info paramsSummaryLog(summary_options, input_workflow)
-    //log.info after_text
+    log.info after_text
 
     //
     // Validate the parameters using nextflow_schema.json or the schema

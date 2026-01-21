@@ -56,15 +56,15 @@ workflow PIPELINE_INITIALISATION {
 before_text ="""
 -\033[2m------------------------------------------------------------------------------------------------------\033[0m-
 
-              #######  #####      ######    #
-                   #  #     #     #     #  
-                  #   #           #      #  #   ###    ###   ###   #   #   ###   # ###  #   #
-                 #     #####      #      #  #  #      #     #   #  #   #  #   #  # #    #   #
-                #           #     #      #  #   ###   #     #   #  #   #  #####  ##      # #
-               #      #     #     #     #   #      #  #     #   #   # #   #      #       ##
-              #######  #####      ######    #   ###    ###   ###     #     ###   #       #
-                                                                                       #
-                                    Elucidate.  Innovate.  Accelerate
+              #######  #####  \033[0;34m ######    #                                                           \033[0m
+                   #  #     # \033[0;34m #     #                                                               \033[0m
+                  #   #       \033[0;34m #      #  #   ###    ###   ###   #   #   ###   # ###  #   #           \033[0m
+                 #     #####  \033[0;34m #      #  #  #      #     #   #  #   #  #   #  # #    #   #           \033[0m
+                #           # \033[0;34m #      #  #   ###   #     #   #  #   #  #####  ##      # #            \033[0m
+               #      #     # \033[0;34m #     #   #      #  #     #   #   # #   #      #       ##             \033[0m
+              #######  #####  \033[0;34m ######    #   ###    ###   ###     #     ###   #       #              \033[0m
+                              \033[0;34m                                                       #               \033[0m
+                              \033[0;34m            Elucidate.  Innovate.  Accelerate                          \033[0m
 
 \033[0;35m  ${workflow.manifest.name} ${workflow.manifest.version}\033[0m
 
@@ -100,6 +100,8 @@ before_text ="""
 \033[0;35m  nf-core/scdownstream ${workflow.manifest.version}\033[0m
 -\033[2m----------------------------------------------------\033[0m-
 """
+*/
+
     after_text = """${workflow.manifest.doi ? "\n* The pipeline\n" : ""}${workflow.manifest.doi.tokenize(",").collect { doi -> "    https://doi.org/${doi.trim().replace('https://doi.org/','')}"}.join("\n")}${workflow.manifest.doi ? "\n" : ""}
 * The nf-core framework
     https://doi.org/10.1038/s41587-020-0439-x
@@ -107,7 +109,7 @@ before_text ="""
 * Software dependencies
     https://github.com/nf-core/scdownstream/blob/master/CITATIONS.md
 """
-*/
+
     command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv -profile awsbatch [ OPTIONS ]"
 
     UTILS_NFSCHEMA_PLUGIN (
@@ -118,7 +120,7 @@ before_text ="""
         help_full,
         show_hidden,
         before_text,
-        //[],
+        after_text,
         command
     )
 
