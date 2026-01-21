@@ -1,8 +1,33 @@
+// 
+//  .......  .....     ######   #
+//       .  .     .    #     #  
+//      .   .          #     #  #   ###    ###   ###   #   #   ###   # ###  #   #
+//     .     .....     #     #  #  #      #     #   #  #   #  #   #  ##     #   #
+//    .           .    #     #  #   ###   #     #   #  #   #  #####  #      #   #
+//   .      .     .    #     #  #      #  #     #   #   # #   #      #       # #
+//  .......  .....     ######   #   ###    ###   ###     #     ###   #        #
+//                                                                           #
+//                     Elucidate.  Innovate.  Accelerate.
+//
+//  Authors:
+//  ZS Discovery
+//
+//  Copyright (c) ZS Discovery
+//
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    bayer-int/kumo-long-read-nf
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    Website: www.zs.com/Discovery
+//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
+    CONFIG FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
 
 include { LOAD_H5AD                            } from '../subworkflows/local/load_h5ad'
 include { QUALITY_CONTROL                      } from '../subworkflows/local/quality_control'
@@ -15,23 +40,50 @@ include { PSEUDOBULKING                        } from '../subworkflows/local/pse
 include { PER_GROUP                            } from '../subworkflows/local/per_group'
 include { FINALIZE                             } from '../subworkflows/local/finalize'
 include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap                     } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc                 } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML               } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText               } from '../subworkflows/local/utils_nfcore_scdownstream_pipeline'
+include { samplesheetToList                    } from 'plugin/nf-schema'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN MAIN WORKFLOW
+    VALIDATE INPUTS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow SCDOWNSTREAM {
-    take:
-    ch_samplesheet // channel: samplesheet read in from --input
-    ch_base        // channel: [ val(meta), path(h5ad) ]
 
-    main:
+def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+
+// Validate input parameters
+
+//WorkflowScdownstream.initialise(params, log)
+
+//
+// Custom validation for pipeline parameters
+//
+validateInputParameters()
+
+// Check input path parameters to see if they exist
+def checkPathParamList = [ params.input, params.multiqc_config ]
+for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
+
+
+// Create channel from input file provided through params.input
+//
+ch_samplesheet = params.input ? channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json")).map {
+        sample -> validateInputSamplesheet(sample)
+    }
+    : channel.empty()
+
+ch_base = params.base_adata ? Channel.value([[id: "base"], file(params.base_adata, checkIfExists: true)]) : Channel.value([[], []])
+   
+
+
+// Info required for completion email and summary
+def multiqc_report = []
+
+
+workflow SCDOWNSTREAM {
+
 
     ch_versions = channel.empty()
     ch_integrations = channel.empty()
@@ -161,7 +213,7 @@ workflow SCDOWNSTREAM {
     //
     // Collate and save software versions
     //
-    def topic_versions = channel.topic("versions")
+    def topic_versions = Channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
@@ -191,44 +243,96 @@ workflow SCDOWNSTREAM {
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = channel.fromPath(
-        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ?
-        channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ?
-        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        channel.empty()
+ch_multiqc_config        = file("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
+ch_multiqc_logo          = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
 
-    summary_params      = paramsSummaryMap(
-        workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
-        file(params.multiqc_methods_description, checkIfExists: true) :
-        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = channel.value(
-        methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_methods_description.collectFile(
-            name: 'methods_description_mqc.yaml',
-            sort: true,
-        )
-    )
+//workflow_summary    = WorkflowScdownstream.paramsSummaryMultiqc(workflow, summary_params)
+//ch_workflow_summary = Channel.value(workflow_summary)
+
+ch_multiqc_files = Channel.empty()
+//ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+
 
     MULTIQC(
         ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
+        ch_multiqc_config,
+        ch_multiqc_custom_config.ifEmpty([]),
+        ch_multiqc_logo.ifEmpty([]),
         [],
         [],
     )
 
-    emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions // channel: [ path(versions.yml) ]
+
+multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+ch_versions    = ch_versions.mix(MULTIQC.out.versions)
+
+}
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    COMPLETION EMAIL AND SUMMARY
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+/*
+workflow.onComplete {
+    if (params.email || params.email_on_fail) {
+        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
+    }
+    NfcoreTemplate.summary(workflow, params, log)
+
+
+
+
+}
+*/
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+//
+// Check and validate pipeline parameters
+//
+def validateInputParameters() {
+    if (!params.input && !(params.base_adata && params.base_embeddings && params.base_label_col)) {
+        throw new Exception("Either an input samplesheet or (base_adata && base_embeddings && base_label_col) must be provided")
+    }
+
+    if (params.qc_only && !params.input) {
+        throw new Exception("If qc_only is set to true, an input samplesheet must be provided")
+    }
+
+    def integration_methods = params.integration_methods.split(',').collect { it.trim().toLowerCase() }
+    if (params.input && params.base_adata && (integration_methods - ['scvi', 'scanvi', 'scimilarity']).size() > 0) {
+        throw new Exception("Only scvi, scanvi and scimilarity integration methods are supported if base_adata is provided")
+    }
+
+    if (params.base_adata && 'scvi' in integration_methods && !params.scvi_model) {
+        throw new Exception("If base_adata is provided and scvi is used as integration method, scvi_model must be provided.")
+    }
+
+    if (params.base_adata && 'scanvi' in integration_methods && !params.scanvi_model) {
+        throw new Exception("If base_adata is provided and scanvi is used as integration method, scanvi_model must be provided.")
+    }
+
+    if (params.base_adata && 'scimilarity' in integration_methods && !params.scimilarity_model) {
+        throw new Exception("If base_adata is provided and scimilarity is used as integration method, scimilarity_model must be provided.")
+    }
+}
+
+// Validate channels from input samplesheet
+//
+def validateInputSamplesheet(input) {
+    def (meta, filtered, unfiltered) = input
+    if (!filtered && !unfiltered) {
+        throw new Exception("Both filtered and unfiltered files are missing for sample ${meta.id}")
+    }
+
+    return input
 }
