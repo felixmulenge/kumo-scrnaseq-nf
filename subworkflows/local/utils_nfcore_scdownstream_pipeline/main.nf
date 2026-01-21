@@ -81,7 +81,7 @@ workflow PIPELINE_INITIALISATION {
         help_full,
         show_hidden,
         before_text,
-        [],
+        //[],
         command
     )
 
