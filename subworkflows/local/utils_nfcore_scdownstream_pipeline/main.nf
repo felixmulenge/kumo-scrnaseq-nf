@@ -53,7 +53,9 @@ workflow PIPELINE_INITIALISATION {
     //
     // Validate parameters and generate parameter summary to stdout
     //
-/*
+before_text ="""
+-\033[2m------------------------------------------------------------------------------------------------------\033[0m-
+
               #######  #####      ######    #
                    #  #     #     #     #  
                   #   #           #      #  #   ###    ###   ###   #   #   ###   # ###  #   #
@@ -62,7 +64,14 @@ workflow PIPELINE_INITIALISATION {
                #      #     #     #     #   #      #  #     #   #   # #   #      #       ##
               #######  #####      ######    #   ###    ###   ###     #     ###   #       #
                                                                                        #
-*/
+                                    Elucidate.  Innovate.  Accelerate
+
+\033[0;35m  ${workflow.manifest.name} ${workflow.manifest.version}\033[0m
+
+-\033[2m------------------------------------------------------------------------------------------------------\033[0m-     
+"""
+
+/*
 before_text ="""
 -\033[2m------------------------------------------------------------------------------------------------------\033[0m-
  \033[0;34m    ______   ______       ____         ____     ___    ___                 ____   ____             \033[0m  
@@ -77,7 +86,7 @@ before_text ="""
 
 -\033[2m------------------------------------------------------------------------------------------------------\033[0m-
 """
-
+*/
 
 
 /*
@@ -99,7 +108,7 @@ before_text ="""
     https://github.com/nf-core/scdownstream/blob/master/CITATIONS.md
 """
 */
-    command = "nextflow run ${workflow.manifest.name} -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>"
+    command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv -profile awsbatch [ OPTIONS ]"
 
     UTILS_NFSCHEMA_PLUGIN (
         workflow,
