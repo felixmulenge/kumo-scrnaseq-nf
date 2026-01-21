@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/scdownstream/master/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/bayer-int/kumo-rnaseq-nf/master/nextflow_schema.json",
     "title": "nf-core/scdownstream pipeline parameters",
     "description": "A single cell transcriptomics pipeline for QC, integration and making the results presentable",
     "type": "object",

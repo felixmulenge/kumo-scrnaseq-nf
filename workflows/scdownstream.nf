@@ -51,7 +51,7 @@ include { samplesheetToList                    } from 'plugin/nf-schema'
 */
 
 
-//def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
+def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
 
@@ -213,7 +213,7 @@ workflow SCDOWNSTREAM {
     //
     // Collate and save software versions
     //
-    def topic_versions = channel.topic("versions")
+    def topic_versions = Channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
