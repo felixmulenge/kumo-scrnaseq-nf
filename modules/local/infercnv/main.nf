@@ -88,3 +88,117 @@ process INFERCNV {
     END_VERSIONS
     """
 }
+
+
+process INFERCNV_FROM_H5AD {
+  tag "${sample_id}"
+
+  container "docker.io/trinityctat/infercnv:latest"
+
+  /*
+   * CONTRACT / INTERFACE
+   * --------------------
+   * Required Outputs:
+   *  - infercnv_out/ (directory)
+   *      Expected to include inferCNV outputs AND (if write_feature_table=true):
+   *        infercnv_out/map_metadata_from_infercnv.txt
+   *  - seurat_with_infercnv_features.rds
+   *
+   * REQUIRED DEPENDENCIES:
+   *  - R packages: infercnv, Seurat, zellkonverter, SingleCellExperiment, SummarizedExperiment, Matrix, optparse
+   */
+
+  publishDir "${params.outdir ?: 'results'}/infercnv/${sample_id}", mode: 'copy'
+
+  input:
+    tuple val(sample_id), path(h5ad)
+    path annotations_tsv
+    path gene_order_tsv
+
+  output:
+    tuple val(sample_id), path("infercnv_out"), emit: infercnv_dir
+    tuple val(sample_id), path("seurat_with_infercnv_features.rds"), emit: seurat_rds
+
+  script:
+    def ref_groups          = params.infercnv_ref_groups ?: ""
+    def cutoff              = params.infercnv_cutoff ?: 0.10
+    def cluster_by_groups   = (params.infercnv_cluster_by_groups != null) ? params.infercnv_cluster_by_groups : true
+    def denoise             = (params.infercnv_denoise != null) ? params.infercnv_denoise : true
+    def analysis_mode       = params.infercnv_analysis_mode ?: "subclusters"
+    def num_threads         = params.infercnv_num_threads ?: task.cpus
+    def tumor_method        = params.infercnv_tumor_subcluster_partition_method ?: "leiden"
+
+    def feature_top_n       = params.infercnv_feature_top_n ?: 10
+    def write_feature_table = (params.infercnv_write_feature_table != null) ? params.infercnv_write_feature_table : true
+
+    """
+    Rscript ${projectDir}/bin/infercnv_from_h5ad.R \
+      --h5ad ${h5ad} \
+      --annotations ${annotations_tsv} \
+      --gene_order ${gene_order_tsv} \
+      --ref_groups '${ref_groups}' \
+      --outdir infercnv_out \
+      --cutoff ${cutoff} \
+      --cluster_by_groups ${cluster_by_groups} \
+      --denoise ${denoise} \
+      --HMM true \
+      --analysis_mode ${analysis_mode} \
+      --num_threads ${num_threads} \
+      --tumor_subcluster_partition_method ${tumor_method} \
+      --extract_features true \
+      --feature_top_n ${feature_top_n} \
+      --write_feature_table ${write_feature_table}
+    """
+}
+
+
+
+
+
+
+
+process INFERCNV_FROM_H5AD {
+    tag "${meta.id}"
+    label 'process_medium'
+
+    container "docker.io/YOUR_ORG/infercnv:YOUR_TAG"
+
+    input:
+    tuple val(meta), path(h5ad)
+    path annotations_tsv
+    path gene_order_tsv
+    val(ref_groups)
+    val(cutoff)
+    val(cluster_by_groups)
+    val(denoise)
+    val(analysis_mode)
+    val(feature_top_n)
+    val(write_feature_table)
+
+    output:
+    tuple val(meta), path("${prefix}.infercnv_out"), emit: infercnv_dir
+    tuple val(meta), path("${prefix}.seurat_with_infercnv_features.rds"), emit: seurat_rds
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    template 'infercnv_from_h5ad.R'
+
+    stub:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    mkdir -p ${prefix}.infercnv_out
+    touch ${prefix}.seurat_with_infercnv_features.rds
+    cat > versions.yml <<-END
+    INFERCNV_FROM_H5AD:
+      r-base: "stub"
+      infercnv: "stub"
+      seurat: "stub"
+      zellkonverter: "stub"
+    END
+    """
+}
+
