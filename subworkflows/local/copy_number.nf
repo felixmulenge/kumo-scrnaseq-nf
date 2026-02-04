@@ -4,7 +4,7 @@ workflow COPY_NUMBER {
     take:
     ch_h5ad // channel: [ meta, h5ad]   from celltpe_assignment
     ch_gene_order
-    ch_gene_groups
+    ch_ref_groups
 
     main:
     ch_versions = channel.empty()
@@ -13,7 +13,7 @@ workflow COPY_NUMBER {
     //ref_groups   = params.ref_groups ? Channel.value(file(params.ref_groups, checkIfExists: true))  : Channel.empty()
 
     if (params.celltypist_model) {
-        INFERCNV(ch_h5ad, gene_order, ref_groups)
+        INFERCNV(ch_h5ad, ch_gene_order, ch_ref_groups)
         ch_versions = ch_versions.mix(INFERCNV.out.versions)
     }
 
