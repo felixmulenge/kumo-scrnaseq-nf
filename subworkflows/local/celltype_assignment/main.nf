@@ -9,6 +9,7 @@ workflow CELLTYPE_ASSIGNMENT {
     main:
     ch_versions = channel.empty()
     ch_obs = channel.empty()
+    ch_h5ad_out = channel.empty()
 
     if (params.celldex_reference ) {
         SINGLER(
@@ -25,9 +26,11 @@ workflow CELLTYPE_ASSIGNMENT {
         CELLTYPES_CELLTYPIST(ch_h5ad, celltypist_models)
         ch_obs = ch_obs.mix(CELLTYPES_CELLTYPIST.out.obs)
         ch_versions = ch_versions.mix(CELLTYPES_CELLTYPIST.out.versions)
+        ch_h5ad_out = CELLTYPES_CELLTYPIST.out.h5ad
     }
 
     emit:
     obs      = ch_obs      // channel: [ meta, pkl ]
+    ch_h5ad_out = ch_h5ad_out
     versions = ch_versions // channel: [ versions.yml ]
 }
