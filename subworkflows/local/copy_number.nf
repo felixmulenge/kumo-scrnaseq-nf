@@ -12,8 +12,7 @@ workflow COPY_NUMBER {
 
     if (params.celltypist_model) {
         INFERCNV(ch_h5ad, gene_order, ref_groups)
-
-        ch_versions = ch_versions.mix(CELLTYPES_CELLTYPIST.out.versions)
+        ch_versions = ch_versions.mix(INFERCNV.out.versions)
     }
 
     emit:
