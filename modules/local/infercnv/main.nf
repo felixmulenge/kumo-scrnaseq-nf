@@ -26,12 +26,14 @@ process INFERCNV {
     def prefix = task.ext.prefix ?: "${meta.id}"
  
     """
+    mkdir infercnv_tmp
     Run_infercnv.R \\
         --input_h5ad $h5ad \\
         --ref_groups $ref_groups \\
         --gene_order_file $gene_order_tsv \\
         --threads $task.cpus \\
         --prefix $prefix \\
+        --temp_dir infercnv_tmp \\
         $args 
 
     """
