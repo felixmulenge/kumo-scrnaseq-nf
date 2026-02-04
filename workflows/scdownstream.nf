@@ -80,7 +80,9 @@ workflow SCDOWNSTREAM {
         ch_versions = ch_versions.mix(CELLTYPE_ASSIGNMENT.out.versions)
         ch_obs_per_sample = ch_obs_per_sample.mix(CELLTYPE_ASSIGNMENT.out.obs)
 
-        COPY_NUMBER(CELLTYPE_ASSIGNMENT.out.h5ad_out)
+        COPY_NUMBER(CELLTYPE_ASSIGNMENT.out.h5ad_out,
+        params.gene_order,
+        params.ref_groups)
         ch_versions = ch_versions.mix(COPY_NUMBER.out.versions)
 
         FINALIZE_QC_ANNDATAS(

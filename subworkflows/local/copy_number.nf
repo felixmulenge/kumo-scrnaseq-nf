@@ -2,13 +2,15 @@ include { INFERCNV           } from '../../modules/local/infercnv'
 
 workflow COPY_NUMBER {
     take:
-    ch_h5ad // channel: [ meta, h5ad, symbol_col ]
+    ch_h5ad // channel: [ meta, h5ad]   from celltpe_assignment
+    ch_gene_order
+    ch_gene_groups
 
     main:
     ch_versions = channel.empty()
 
-    gene_order   = params.gene_order ? Channel.value(file(params.gene_order, checkIfExists: true))  : Channel.empty()
-    ref_groups   = params.ref_groups ? Channel.value(file(params.ref_groups, checkIfExists: true))  : Channel.empty()
+    //gene_order   = params.gene_order ? Channel.value(file(params.gene_order, checkIfExists: true))  : Channel.empty()
+    //ref_groups   = params.ref_groups ? Channel.value(file(params.ref_groups, checkIfExists: true))  : Channel.empty()
 
     if (params.celltypist_model) {
         INFERCNV(ch_h5ad, gene_order, ref_groups)
