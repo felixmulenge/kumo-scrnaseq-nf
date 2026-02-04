@@ -31,6 +31,6 @@ workflow CELLTYPE_ASSIGNMENT {
 
     emit:
     obs      = ch_obs      // channel: [ meta, pkl ]
-    ch_h5ad_out = ch_h5ad_out
+    h5ad_out = ch_h5ad_out
     versions = ch_versions // channel: [ versions.yml ]
 }

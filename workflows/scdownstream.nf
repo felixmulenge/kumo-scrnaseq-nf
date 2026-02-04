@@ -9,6 +9,7 @@ include { QUALITY_CONTROL                      } from '../subworkflows/local/qua
 include { CELLTYPE_ASSIGNMENT                  } from '../subworkflows/local/celltype_assignment'
 include { ADATA_EXTEND as FINALIZE_QC_ANNDATAS } from '../modules/local/adata/extend'
 include { COMBINE                              } from '../subworkflows/local/combine'
+include { COPY_NUMBER                          } from '../subworkflows/local/copy_number'
 include { ADATA_SPLITEMBEDDINGS                } from '../modules/local/adata/splitembeddings'
 include { CLUSTER                              } from '../subworkflows/local/cluster'
 include { PSEUDOBULKING                        } from '../subworkflows/local/pseudobulking'
@@ -78,6 +79,9 @@ workflow SCDOWNSTREAM {
         CELLTYPE_ASSIGNMENT(ch_h5ad.map { meta, h5ad -> [meta, h5ad, meta.symbol_col] })
         ch_versions = ch_versions.mix(CELLTYPE_ASSIGNMENT.out.versions)
         ch_obs_per_sample = ch_obs_per_sample.mix(CELLTYPE_ASSIGNMENT.out.obs)
+
+        COPY_NUMBER(CELLTYPE_ASSIGNMENT.out.h5ad_out)
+        ch_versions = ch_versions.mix(COPY_NUMBER.out.versions)
 
         FINALIZE_QC_ANNDATAS(
             ch_h5ad.join(ch_obs_per_sample.groupTuple(), remainder: true).join(ch_var_per_sample.groupTuple(), remainder: true).join(ch_obsm_per_sample.groupTuple(), remainder: true).join(ch_obsp_per_sample.groupTuple(), remainder: true).join(ch_uns_per_sample.groupTuple(), remainder: true).join(ch_layers_per_sample.groupTuple(), remainder: true).map { meta, h5ad, obs, var, obsm, obsp, uns, layers ->
