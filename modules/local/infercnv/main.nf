@@ -3,7 +3,7 @@ process INFERCNV {
     label 'process_medium'
 
 
-    container "docker.io/trinityctat/infercnv:1.20.0"
+    container "docker.io/trinityctat/infercnv:latest"
 
     input:
     tuple val(meta), path(h5ad)

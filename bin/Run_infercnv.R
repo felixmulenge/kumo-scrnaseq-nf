@@ -30,7 +30,7 @@ option_list <- list(
   make_option(c("--ref_groups"), type="character", default="", help="Comma-separated reference group names"),
   make_option(opt_str = "--gene_order_file",type = "character",default = "",help = "Path to gene order file (tab-delimited, no header)"),
   make_option(opt_str = "--temp_dir",type = "character",default = "infercnv_tmp",help = "Temporary directory to save inferCNV output"),
-  make_option(opt_str = c("-t", "--threads"),type = "integer",default = 4,help = "Number of threads to use"),
+  make_option(opt_str = c("-t", "--threads"),type = "integer",help = "Number of threads to use"),
   make_option(opt_str = "--random_seed",type = "integer",default = 2025,help = "Random seed for reproducibility"),
   make_option(opt_str = "--prefix",type = "character",default = NULL,help = "Prefix for all output files")
 )
