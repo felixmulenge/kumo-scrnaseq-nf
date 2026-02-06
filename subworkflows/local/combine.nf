@@ -62,11 +62,11 @@ workflow COMBINE {
     ch_integrations = ch_integrations
         .map{meta, file -> [meta + [integration: meta.id], file]}
 
-
+    /*
     SCIB_METRICS(ch_integrations,
         params.integration_methods)
     ch_versions = ch_versions.mix(SCIB_METRICS.out.versions)
-    
+    */
 
     emit:
     h5ad             = ch_outer         // channel: [ merged, h5ad ]
