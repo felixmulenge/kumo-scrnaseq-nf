@@ -80,11 +80,12 @@ workflow SCDOWNSTREAM {
         ch_versions = ch_versions.mix(CELLTYPE_ASSIGNMENT.out.versions)
         ch_obs_per_sample = ch_obs_per_sample.mix(CELLTYPE_ASSIGNMENT.out.obs)
 
-        COPY_NUMBER(CELLTYPE_ASSIGNMENT.out.h5ad_out,
+        /*COPY_NUMBER(CELLTYPE_ASSIGNMENT.out.h5ad_out,
         params.gene_order,
         params.ref_groups)
         ch_versions = ch_versions.mix(COPY_NUMBER.out.versions)
-
+        */
+        
         FINALIZE_QC_ANNDATAS(
             ch_h5ad.join(ch_obs_per_sample.groupTuple(), remainder: true).join(ch_var_per_sample.groupTuple(), remainder: true).join(ch_obsm_per_sample.groupTuple(), remainder: true).join(ch_obsp_per_sample.groupTuple(), remainder: true).join(ch_uns_per_sample.groupTuple(), remainder: true).join(ch_layers_per_sample.groupTuple(), remainder: true).map { meta, h5ad, obs, var, obsm, obsp, uns, layers ->
                 [meta, h5ad, obs ?: [], var ?: [], obsm ?: [], obsp ?: [], uns ?: [], layers ?: []]
