@@ -63,7 +63,7 @@ workflow COMBINE {
         .map{meta, file -> [meta + [integration: meta.id], file]}
 
 
-    SCIB_METRICS(INTEGRATE.out.integrations,
+    SCIB_METRICS(ch_integrations,
         params.integration_methods)
     ch_versions = ch_versions.mix(SCIB_METRICS.out.versions)
     
