@@ -6,6 +6,7 @@ import argparse
 import scanpy as sc
 import matplotlib.pyplot as plt
 from scib_metrics.benchmark import Benchmarker, BioConservation, BatchCorrection
+import yaml
 
 
 def main(args):
@@ -40,13 +41,13 @@ def main(args):
   # -------------------------
   raw_df = bm.get_results(min_max_scale=False)
   raw_df = raw_df.transpose()
-  raw_out = f"{args.output_prefix}_scib_metrics_raw.tsv"
+  raw_out = f"{args.prefix}_scib_metrics_raw.tsv"
   raw_df.to_csv(raw_out, sep="\t")
   print(f"Saved raw metrics table: {raw_out}")
 
   scaled_df = bm.get_results(min_max_scale=True)
   scaled_df = scaled_df.transpose()
-  scaled_out = f"{args.output_prefix}_scib_metrics_scaled.tsv"
+  scaled_out = f"{args.prefix}_scib_metrics_scaled.tsv"
   scaled_df.to_csv(scaled_out, sep="\t")
   print(f"Saved scaled metrics table: {scaled_out}")
 
@@ -57,7 +58,7 @@ def main(args):
   with tempfile.TemporaryDirectory() as tmpdir:
       bm.plot_results_table(min_max_scale=False,show=False,save_dir=tmpdir)
       src = os.path.join(tmpdir,"scib_results.svg")
-      dst =f"{args.output_prefix}_scib_metrics_raw.svg"
+      dst =f"{args.prefix}_scib_metrics_raw.svg"
       shutil.move(src,dst)
 
   # -------------------------
@@ -66,32 +67,41 @@ def main(args):
   with tempfile.TemporaryDirectory() as tmpdir:
       bm.plot_results_table(min_max_scale=True,show=False,save_dir=tmpdir)
       src = os.path.join(tmpdir,"scib_results.svg")
-      dst =f"{args.output_prefix}_scib_metrics_scaled.svg"
+      dst =f"{args.prefix}_scib_metrics_scaled.svg"
       shutil.move(src,dst)
 
-
-  print("scIB benchmarking completed successfully!")
 
 
 if __name__ == "__main__":
   
   parser = argparse.ArgumentParser(description="Run scIB integration benchmarking on an h5ad file")
   parser.add_argument("--input_h5ad",required=True,help="Input AnnData (.h5ad)")
-  parser.add_argument("--output_prefix",required=True,help="Prefix for all output files")
+  parser.add_argument("--prefix",required=True,help="Prefix for all output files")
   parser.add_argument("--batch_key",default="batch",help="Batch column in adata.obs (default: batch)")
   parser.add_argument("--label_key",default="cell_type",help="Cell type column in adata.obs (default: cell_type)")
   parser.add_argument("--embeddings",default=" ",help="Comma-separated embedding keys in adata.obsm")
-  parser.add_argument("--n_jobs",type=int,default=1,help="Number of parallel jobs (default: 1)")
+  parser.add_argument("--n_jobs",type=int,default=" ",help="Number of parallel jobs")
   
   args = parser.parse_args()
   main(args)
 
 
+# Versions
+versions = {
+    "${task.process}": {
+        "python": platform.python_version(),
+        "scanpy": sc.__version__,
+        "Benchmarker": Benchmarker.__version__
+    }
+}
+
+with open("versions.yml", "w") as f:
+    yaml.dump(versions, f)
 
 
 #python run_scib_benchmark.py \
 #--input_h5ad lung_integrated.h5ad \
-#--output_prefix lung \
+#--prefix lung \
 #--batch_key batch \
 #--label_key cell_type \
 #--embeddings X_pca,X_scVI,X_harmony \

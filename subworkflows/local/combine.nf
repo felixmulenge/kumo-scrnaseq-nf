@@ -1,4 +1,5 @@
 include { INTEGRATE             } from './integrate'
+include { SCIB_METRICS          } from './scib_metrics'
 include { ADATA_MERGEEMBEDDINGS } from '../../modules/local/adata/mergeembeddings'
 include { ADATA_MERGE           } from '../../modules/local/adata/merge'
 
@@ -60,6 +61,12 @@ workflow COMBINE {
 
     ch_integrations = ch_integrations
         .map{meta, file -> [meta + [integration: meta.id], file]}
+
+
+    SCIB_METRICS(INTEGRATE.out.integrations,
+        params.integration_methods)
+    ch_versions = ch_versions.mix(SCIB_METRICS.out.versions)
+    
 
     emit:
     h5ad             = ch_outer         // channel: [ merged, h5ad ]

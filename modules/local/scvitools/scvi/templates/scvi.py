@@ -67,6 +67,7 @@ model.train(
 
 # Round to ensure hashes are stable
 adata.obsm["X_emb"] = model.get_latent_representation()
+adata.obsm["scvi"]=adata.obsm["X_emb"]                  # uncomment
 
 del adata.uns["_scvi_manager_uuid"]
 del adata.uns["_scvi_uuid"]

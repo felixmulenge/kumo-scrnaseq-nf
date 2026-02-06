@@ -29,7 +29,7 @@ sce.pp.harmony_integrate(adata_processing, "${batch_col}", adjusted_basis="X_emb
 # This ensures hashes are consistent
 emb = adata_processing.obsm["X_emb"].round(6)
 adata.obsm["X_emb"] = emb
-
+adata.obsm["harmony"]=adata.obsm["X_emb"]      # uncomment
 adata.write_h5ad("${prefix}.h5ad")
 
 df = pd.DataFrame(emb, index=adata.obs_names)
